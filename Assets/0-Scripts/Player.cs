@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -6,10 +5,8 @@ public class Player : MonoBehaviour
     float oX;
     float oY;
     float oZ;
-    // [SerializeField] float speed = 1f;
-    // float t = 0f;
-    // float startX = 0f;
-    // float endX = 0f;
+    [SerializeField] float rotationSpeed = 1f;
+    
     void Start()
     {
         oX = transform.eulerAngles.x;
@@ -18,16 +15,16 @@ public class Player : MonoBehaviour
     }
     void Update()
     {
+        HandleMovement();
+    }
+
+    void HandleMovement()
+    {
         Vector3 screenPos = Input.mousePosition;
         screenPos.z = Camera.main.nearClipPlane;
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
-        // Debug.Log(worldPos);
-        // startX = transform.eulerAngles.x;
-        float angle = (float)(Math.Atan2(worldPos.y, worldPos.x) * (180 / Math.PI));
-        // endX = oX + angle;
-        // t += Time.deltaTime * speed;
-        // t = Mathf.Clamp01(t);
-        // Debug.Log(t);
-        transform.rotation = Quaternion.Euler(new Vector3(oX + angle, oY, oZ));
+        float angle = Mathf.Atan2(worldPos.y, worldPos.x) * Mathf.Rad2Deg;
+        Quaternion targetRotation = Quaternion.Euler(oX + angle, oY, oZ);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
     }
 }
