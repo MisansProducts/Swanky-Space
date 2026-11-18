@@ -17,11 +17,6 @@ public class Player : MonoBehaviour
         oY = transform.eulerAngles.y;
         oZ = transform.eulerAngles.z;
     }
-    void Update()
-    {
-        Transform cameraTransform = Camera.main.GetComponent<Transform>();
-        cameraTransform.position = new Vector3(transform.position.x, transform.position.y, cameraTransform.position.z);
-    }
 
     void FixedUpdate()
     {
@@ -31,16 +26,21 @@ public class Player : MonoBehaviour
     void HandleMovement()
     {
         // Smooth rotation
-        Vector3 screenPos = Input.mousePosition;
-        screenPos.z = Camera.main.nearClipPlane;
-        Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
-        worldPos.x -= transform.position.x;
-        worldPos.y -= transform.position.y;
-        float angle = Mathf.Atan2(worldPos.y, worldPos.x) * Mathf.Rad2Deg % 360;
-        if (angle < 0) angle += 360;
-        Quaternion targetRotation = Quaternion.Euler(angle, oY, oZ);
-        transform.rotation = Quaternion.Euler(Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime).eulerAngles);
-
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane plane = new Plane(-Vector3.forward, transform.position);
+        Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red);
+        if (plane.Raycast(ray, out float distance))
+        {
+            Vector3 worldPos = ray.GetPoint(distance);
+            Debug.DrawRay(worldPos, Vector3.forward * 2f, Color.green);
+            Vector3 direction = worldPos - transform.position;
+            direction.z = 0f;
+            direction.Normalize();
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg % 360;
+            if (angle < 0) angle += 360;
+            Quaternion targetRotation = Quaternion.Euler(angle, oY, oZ);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
         // Acceleration using semi-implicit Euler integration
         if (Input.GetKey(thrustKey))
             velocity += acceleration * -transform.forward * Time.deltaTime;
