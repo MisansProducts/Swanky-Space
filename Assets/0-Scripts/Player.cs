@@ -28,11 +28,9 @@ public class Player : MonoBehaviour
         // Smooth rotation
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Plane plane = new Plane(-Vector3.forward, transform.position);
-        Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red);
         if (plane.Raycast(ray, out float distance))
         {
             Vector3 worldPos = ray.GetPoint(distance);
-            Debug.DrawRay(worldPos, Vector3.forward * 2f, Color.green);
             Vector3 direction = worldPos - transform.position;
             direction.z = 0f;
             direction.Normalize();
